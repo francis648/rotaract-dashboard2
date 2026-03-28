@@ -20,12 +20,21 @@ app.use(session({
   cookie: { secure: false } // set true if using HTTPS
 }));
 
-// Database connection
+// Database connection using environment variables
 const db = mysql.createConnection({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASS || "",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
   database: process.env.DB_NAME || "rotaract_db"
+});
+
+// Ensure connection works
+db.connect(err => {
+  if (err) {
+    console.error("Database connection failed:", err.stack);
+    return;
+  }
+  console.log("Connected to MySQL database:", process.env.DB_NAME || "rotaract_db");
 });
 
 // Create tables if not exist
@@ -76,7 +85,7 @@ function requireSuperAdmin(req, res, next) {
   });
 }
 
-// Register admin (superadmin only, forced to "admin")
+// Register admin (superadmin only)
 app.post("/register", requireSuperAdmin, async (req, res) => {
   const { username, password } = req.body;
   try {
