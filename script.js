@@ -4,9 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorMsg = document.getElementById("errorMsg");
 
   // ✅ Always point to Render backend in production
+  // Use NEXT_PUBLIC_API_URL from Vercel env
   const API_BASE = window.location.hostname.includes("localhost")
     ? "http://localhost:3000"
-    : "https://rotaract-dashboard2.onrender.com";
+    : process.env.NEXT_PUBLIC_API_URL; // e.g. https://rotaract-dashboard2.onrender.com
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault(); // prevent page reload
