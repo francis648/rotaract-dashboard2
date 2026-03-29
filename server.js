@@ -5,12 +5,22 @@ const session = require("express-session");
 const bcrypt = require("bcrypt");
 const { Parser } = require("json2csv");
 const ExcelJS = require("exceljs");
+const cors = require("cors");
 require("dotenv").config(); // load environment variables
 
 const app = express();
+
+// Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
+// ✅ CORS setup for Vercel frontend
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "https://rotaract-dashboard2.vercel.app",
+  methods: ["GET", "POST", "DELETE"],
+  credentials: true
+}));
 
 // Session setup
 app.use(session({
