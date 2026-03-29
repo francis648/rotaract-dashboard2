@@ -72,7 +72,7 @@ db.query(`
   CREATE TABLE IF NOT EXISTS admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE,
-    password_hash VARCHAR(255),
+    password VARCHAR(255),   -- ✅ use 'password' column name
     role VARCHAR(20) DEFAULT 'admin'
   )
 `);
@@ -101,7 +101,7 @@ app.post("/register", requireSuperAdmin, async (req, res) => {
   try {
     const hashed = await bcrypt.hash(password, 10);
     db.query(
-      "INSERT INTO admins (username, password_hash, role) VALUES (?, ?, 'admin')",
+      "INSERT INTO admins (username, password, role) VALUES (?, ?, 'admin')",
       [username, hashed],
       (err) => {
         if (err) {
@@ -117,13 +117,15 @@ app.post("/register", requireSuperAdmin, async (req, res) => {
   }
 });
 
-// Login
+// ✅ Fixed Login
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   db.query("SELECT * FROM admins WHERE username = ?", [username], async (err, results) => {
     if (err || results.length === 0) return res.status(401).json({ message: "Invalid credentials." });
-    const match = await bcrypt.compare(password, results[0].password_hash);
+
+    const match = await bcrypt.compare(password, results[0].password); // ✅ correct column
     if (!match) return res.status(401).json({ message: "Invalid credentials." });
+
     req.session.userId = results[0].id;
     res.json({ message: "Login successful!", role: results[0].role });
   });
