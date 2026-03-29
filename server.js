@@ -15,9 +15,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// ✅ CORS setup for Vercel frontend
+// ✅ CORS setup for Vercel frontend (production + preview domains)
 app.use(cors({
-  origin: process.env.FRONTEND_URL, // e.g. https://rotaract-dashboard2.vercel.app
+  origin: [
+    process.env.FRONTEND_URL, // e.g. https://rotaract-dashboard2.vercel.app
+    "https://rotaract-dashboard2-kwrx7i2n6-mukunafrancis101-8719s-projects.vercel.app" // preview domain
+  ],
   methods: ["GET", "POST", "DELETE"],
   credentials: true
 }));
@@ -37,7 +40,7 @@ app.use(session({
 // Database connection using Railway credentials
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT || 40789,
+  port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME
@@ -138,6 +141,15 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   req.session.destroy();
   res.json({ message: "Logged out successfully." });
+});
+
+// 🔍 Debug route to check session
+app.get("/check-session", (req, res) => {
+  if (req.session.userId) {
+    res.json({ loggedIn: true, userId: req.session.userId });
+  } else {
+    res.json({ loggedIn: false });
+  }
 });
 
 // Handle form submission
