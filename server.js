@@ -15,12 +15,22 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// ✅ CORS setup for Vercel frontend (production + preview domains)
+// ✅ Dynamic CORS setup for production + preview domains + localhost
+const allowedOrigins = [
+  "http://localhost:3000",                     // local dev
+  "https://rotaract-dashboard2.vercel.app",    // production
+  /\.vercel\.app$/                             // regex: allow all Vercel preview domains
+];
+
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL, // e.g. https://rotaract-dashboard2.vercel.app
-    "https://rotaract-dashboard2-kwrx7i2n6-mukunafrancis101-8719s-projects.vercel.app" // preview domain
-  ],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow non-browser requests
+    if (allowedOrigins.some(o => (typeof o === "string" ? o === origin : o.test(origin)))) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "DELETE"],
   credentials: true
 }));
