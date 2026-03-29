@@ -30,12 +30,13 @@ app.use(session({
   cookie: { secure: false } // set true if using HTTPS
 }));
 
-// Database connection using environment variables
+// Database connection using Railway credentials via environment variables
 const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME || "rotaract_db"
+  host: process.env.DB_HOST,       // hopper.proxy.rlwy.net
+  port: process.env.DB_PORT || 40789, // Railway port
+  user: process.env.DB_USER,       // root
+  password: process.env.DB_PASS,   // Railway password
+  database: process.env.DB_NAME    // railway
 });
 
 // Ensure connection works
@@ -44,7 +45,7 @@ db.connect(err => {
     console.error("Database connection failed:", err.stack);
     return;
   }
-  console.log("Connected to MySQL database:", process.env.DB_NAME || "rotaract_db");
+  console.log("✅ Connected to Railway MySQL:", process.env.DB_NAME);
 });
 
 // Create tables if not exist
@@ -72,7 +73,7 @@ db.query(`
   CREATE TABLE IF NOT EXISTS admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE,
-    password VARCHAR(255),   -- ✅ use 'password' column name
+    password VARCHAR(255),
     role VARCHAR(20) DEFAULT 'admin'
   )
 `);
@@ -85,7 +86,6 @@ function requireLogin(req, res, next) {
   next();
 }
 
-// Middleware to require superadmin role
 function requireSuperAdmin(req, res, next) {
   if (!req.session.userId) return res.status(401).json({ message: "Unauthorized." });
   db.query("SELECT role FROM admins WHERE id = ?", [req.session.userId], (err, results) => {
@@ -117,13 +117,13 @@ app.post("/register", requireSuperAdmin, async (req, res) => {
   }
 });
 
-// ✅ Fixed Login
+// Login
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   db.query("SELECT * FROM admins WHERE username = ?", [username], async (err, results) => {
     if (err || results.length === 0) return res.status(401).json({ message: "Invalid credentials." });
 
-    const match = await bcrypt.compare(password, results[0].password); // ✅ correct column
+    const match = await bcrypt.compare(password, results[0].password);
     if (!match) return res.status(401).json({ message: "Invalid credentials." });
 
     req.session.userId = results[0].id;
@@ -168,7 +168,7 @@ app.get("/members", requireLogin, (req, res) => {
   });
 });
 
-// Export as CSV (protected)
+// Export as CSV
 app.get("/export/csv", requireLogin, (req, res) => {
   db.query("SELECT * FROM charter_members", (err, results) => {
     if (err) return res.status(500).json({ message: "Error exporting CSV." });
@@ -182,7 +182,7 @@ app.get("/export/csv", requireLogin, (req, res) => {
   });
 });
 
-// Export as Excel (protected)
+// Export as Excel
 app.get("/export/excel", requireLogin, async (req, res) => {
   db.query("SELECT * FROM charter_members", async (err, results) => {
     if (err) return res.status(500).json({ message: "Error exporting Excel." });
@@ -198,7 +198,7 @@ app.get("/export/excel", requireLogin, async (req, res) => {
   });
 });
 
-// Delete a member submission (protected)
+// Delete a member
 app.delete("/members/:id", requireLogin, (req, res) => {
   const memberId = req.params.id;
   db.query("DELETE FROM charter_members WHERE id = ?", [memberId], (err, result) => {
@@ -215,4 +215,4 @@ app.delete("/members/:id", requireLogin, (req, res) => {
 
 // Flexible port for hosting
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
