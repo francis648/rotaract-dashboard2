@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       // Use relative path locally, full backend URL when deployed
       const response = await fetch(
-        "https://your-backend.onrender.com/submit", // replace with your backend domain
+        "https://rotaract-dashboard2.onrender.com",  
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
