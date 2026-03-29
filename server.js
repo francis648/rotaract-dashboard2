@@ -17,14 +17,14 @@ app.use(express.static("public"));
 
 // ✅ CORS setup for Vercel frontend
 app.use(cors({
-  origin: "https://rotaract-dashboard2.vercel.app", // frontend domain
+  origin: process.env.FRONTEND_URL, // e.g. https://rotaract-dashboard2.vercel.app
   methods: ["GET", "POST", "DELETE"],
   credentials: true
 }));
 
 // ✅ Session setup with cross-domain cookie support
 app.use(session({
-  secret: process.env.SESSION_SECRET || "supersecretkey",
+  secret: process.env.SESSION_SECRET || "fallbacksecret",
   resave: false,
   saveUninitialized: false,
   cookie: {
