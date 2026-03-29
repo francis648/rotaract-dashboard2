@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Login - Rotaract</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- ✅ Mobile responsiveness -->
   <style>
     body {
       font-family: "Segoe UI", Arial, sans-serif;
@@ -19,7 +20,8 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-      width: 350px;
+      width: 90%;
+      max-width: 350px;
       text-align: center;
     }
     h2 {
@@ -93,8 +95,8 @@
     form.addEventListener("submit", async function(e) {
       e.preventDefault();
       const data = {
-        username: document.getElementById("username").value,
-        password: document.getElementById("password").value
+        username: document.getElementById("username").value.trim(),
+        password: document.getElementById("password").value.trim()
       };
 
       try {
@@ -102,20 +104,26 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-          credentials: "include" // keep session cookie
+          credentials: "include" // ✅ keep session cookie
         });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Server error (${response.status}): ${text}`);
+        }
 
         const result = await response.json(); 
         // Expect backend to return { message: "Login successful!", role: "admin" }
-        
+
         if (result.message && result.message.includes("successful")) {
-          // Save role in localStorage for dashboard UI
+          // ✅ Save role in localStorage for dashboard UI
           localStorage.setItem("userRole", result.role);
           window.location.href = "admin.html"; // redirect to dashboard
         } else {
           errorMsg.textContent = result.message || "Invalid credentials.";
         }
       } catch (error) {
+        console.error("Login error:", error);
         errorMsg.textContent = "Login failed. Please try again.";
       }
     });
