@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("successModal");
   const errorMsg = document.getElementById("errorMsg");
 
-  // Define API base depending on environment
+  // ✅ Always point to Render backend in production
   const API_BASE = window.location.hostname.includes("localhost")
     ? "http://localhost:3000"
     : "https://rotaract-dashboard2.onrender.com";
@@ -22,6 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+
+      if (!response.ok) {
+        // Handle HTTP errors (405, 500, etc.)
+        const text = await response.text();
+        throw new Error(`Server error (${response.status}): ${text}`);
+      }
 
       const result = await response.json();
 
