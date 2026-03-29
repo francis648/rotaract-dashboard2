@@ -21,10 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include"   // ✅ ensure cookies persist
       });
 
       if (!response.ok) {
-        // Handle HTTP errors (405, 500, etc.)
         const text = await response.text();
         throw new Error(`Server error (${response.status}): ${text}`);
       }
