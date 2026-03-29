@@ -3,6 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("successModal");
   const errorMsg = document.getElementById("errorMsg");
 
+  // Define API base depending on environment
+  const API_BASE = window.location.hostname.includes("localhost")
+    ? "http://localhost:3000"
+    : "https://rotaract-dashboard2.onrender.com";
+
   form.addEventListener("submit", async function (e) {
     e.preventDefault(); // prevent page reload
 
@@ -11,15 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // Use relative path locally, full backend URL when deployed
-      const response = await fetch(
-        "https://rotaract-dashboard2.onrender.com",  
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }
-      );
+      // Send to backend /submit route
+      const response = await fetch(`${API_BASE}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
       const result = await response.json();
 
