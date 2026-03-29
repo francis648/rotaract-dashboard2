@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard - Rotaract Members</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- ✅ Mobile responsiveness -->
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
     h2 { margin-bottom: 10px; color: #003566; }
-    .controls { margin-bottom: 15px; }
-    input, select, button { margin-right: 10px; padding: 6px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .controls { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; }
+    input, select, button { padding: 6px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #0077b6; color: white; }
     tr:nth-child(even) { background: #f1f1f1; }
@@ -20,6 +21,15 @@
     .superadmin-only:hover { background: #1e7e34; }
     .delete-btn { background: #dc3545; color: #fff; border: none; padding: 6px 10px; cursor: pointer; }
     .delete-btn:hover { background: #a71d2a; }
+
+    /* ✅ Responsive table for mobile */
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr { display: block; }
+      thead tr { display: none; }
+      tr { margin-bottom: 15px; border: 1px solid #ccc; padding: 10px; background: #fff; }
+      td { border: none; padding: 5px; }
+      td::before { font-weight: bold; display: block; }
+    }
   </style>
 </head>
 <body>
@@ -38,7 +48,6 @@
     <button onclick="loadMembers()">Refresh</button>
     <button onclick="window.location.href='https://rotaract-dashboard2.onrender.com/export/csv'">Download CSV</button>
     <button onclick="window.location.href='https://rotaract-dashboard2.onrender.com/export/excel'">Download Excel</button>
-    <!-- Register Admin button (hidden unless superadmin) -->
     <button id="registerAdminBtn" class="superadmin-only" style="display:none;" onclick="window.location.href='register.html'">
       Register Admin
     </button>
@@ -79,7 +88,7 @@
     let allMembers = [];
     let currentPage = 1;
     const rowsPerPage = 20;
-    let userRole = localStorage.getItem("userRole"); // stored at login
+    let userRole = localStorage.getItem("userRole");
 
     async function loadMembers() {
       try {
@@ -90,9 +99,9 @@
           return;
         }
         allMembers = await response.json();
-        applyFilters(); // render with filters + pagination
+        applyFilters();
       } catch (error) {
-        console.error("Error loading members:", error);
+        alert("Error loading members. Please check your connection.");
       }
     }
 
@@ -130,7 +139,6 @@
         `Page ${currentPage} of ${Math.ceil(members.length / rowsPerPage)}`;
     }
 
-    // Search & Filter
     document.getElementById("searchInput").addEventListener("input", applyFilters);
     document.getElementById("genderFilter").addEventListener("change", applyFilters);
 
@@ -152,7 +160,6 @@
       renderTable(filtered);
     }
 
-    // Pagination controls
     function nextPage() {
       if (currentPage < Math.ceil(allMembers.length / rowsPerPage)) {
         currentPage++;
@@ -167,39 +174,35 @@
       }
     }
 
-    // Logout
     async function logout() {
       try {
         await fetch(`${API_BASE}/logout`, { method: "POST", credentials: "include" });
         alert("Logged out successfully.");
+        localStorage.removeItem("userRole");
         window.location.href = "login.html";
-      } catch (error) {
+      } catch {
         alert("Error logging out.");
       }
     }
 
-    // Delete member
     async function deleteMember(id) {
       if (!confirm("Are you sure you want to delete this member?")) return;
       try {
         const response = await fetch(`${API_BASE}/members/${id}`, { method: "DELETE", credentials: "include" });
         const result = await response.json();
         alert(result.message);
-        loadMembers(); // refresh table
-      } catch (error) {
-        console.error("Error deleting member:", error);
+        loadMembers();
+      } catch {
         alert("Failed to delete member.");
       }
     }
 
-    // Role-based UI
     function checkRole() {
       if (userRole === "superadmin") {
         document.getElementById("registerAdminBtn").style.display = "inline-block";
       }
     }
 
-    // Initial load
     checkRole();
     loadMembers();
   </script>
