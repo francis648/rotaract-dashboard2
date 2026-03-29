@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rotaract Charter Member Form</title>
   <style>
     body {
@@ -17,9 +18,10 @@
       text-align: center;
       border-bottom: 4px solid #0077b6;
     }
-    header img { max-height: 80px; }
+    header img { max-height: 80px; max-width: 100%; height: auto; }
     .form-container {
       max-width: 700px;
+      width: 90%;
       margin: 40px auto;
       background: #ffffff;
       padding: 30px;
@@ -49,90 +51,134 @@
       padding: 20px; margin-top: 40px; border-top: 4px solid #0077b6;
     }
     footer p { margin: 5px 0; font-size: 14px; }
+
+    /* ✅ Success modal styling */
+    #successModal {
+      display: none; /* hidden by default */
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #successModal .modal-content {
+      background: #fff;
+      color: #333;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    #successModal button {
+      margin-top: 15px;
+      background: #0077b6;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #successModal button:hover {
+      background: #023e8a;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      body { font-size: 14px; }
+      h2 { font-size: 18px; }
+      .form-container { padding: 20px; }
+      button { font-size: 14px; padding: 10px; }
+    }
   </style>
 </head>
 <body>
   <header>
     <img src="rotaract.webp" alt="Rotaract Logo">
   </header>
-<div class="form-container">
-  <h2>Rotaract Charter Member Registration</h2>
-  <form id="memberForm" action="/submit" method="POST">
-    <!-- Personal Info -->
-    <label for="title">Title</label>
-    <select name="title" id="title">
-      <option>Mr.</option>
-      <option>Ms.</option>
-      <option>Dr.</option>
-      <option>Rev.</option>
-    </select>
 
-    <label for="first_name">First Name</label>
-    <input type="text" name="first_name" id="first_name" required>
+  <div class="form-container">
+    <h2>Rotaract Charter Member Registration</h2>
+    <form id="memberForm" method="POST">
+      <!-- Personal Info -->
+      <label for="title">Title</label>
+      <select name="title" id="title">
+        <option>Mr.</option>
+        <option>Ms.</option>
+        <option>Dr.</option>
+        <option>Rev.</option>
+      </select>
 
-    <label for="middle_name">Middle Name</label>
-    <input type="text" name="middle_name" id="middle_name">
+      <label for="first_name">First Name</label>
+      <input type="text" name="first_name" id="first_name" required>
 
-    <label for="last_name">Last Name</label>
-    <input type="text" name="last_name" id="last_name" required>
+      <label for="middle_name">Middle Name</label>
+      <input type="text" name="middle_name" id="middle_name">
 
-    <label for="gender">Gender</label>
-    <select name="gender" id="gender">
-      <option>Male</option>
-      <option>Female</option>
-      <option>Prefer to self-describe</option>
-      <option>Prefer not to say</option>
-    </select>
+      <label for="last_name">Last Name</label>
+      <input type="text" name="last_name" id="last_name" required>
 
-    <label for="dob">Date of Birth</label>
-    <input type="date" name="dob" id="dob" required>
+      <label for="gender">Gender</label>
+      <select name="gender" id="gender">
+        <option>Male</option>
+        <option>Female</option>
+        <option>Prefer to self-describe</option>
+        <option>Prefer not to say</option>
+      </select>
 
-    <!-- Rotary Info -->
-    <label for="club_name">Club Name</label>
-    <input type="text" name="club_name" id="club_name">
+      <label for="dob">Date of Birth</label>
+      <input type="date" name="dob" id="dob" required>
 
-    <!-- Contact Info -->
-    <label for="email">Email Address</label>
-    <input type="email" name="email" id="email" required>
+      <!-- Rotary Info -->
+      <label for="club_name">Club Name</label>
+      <input type="text" name="club_name" id="club_name">
 
-    <label for="phone">Preferred Phone</label>
-    <input type="tel" name="phone" id="phone" required>
+      <!-- Contact Info -->
+      <label for="email">Email Address</label>
+      <input type="email" name="email" id="email" required>
 
-    <label for="alt_phone">Alternate Phone</label>
-    <input type="tel" name="alt_phone" id="alt_phone">
+      <label for="phone">Preferred Phone</label>
+      <input type="tel" name="phone" id="phone" required>
 
-    <!-- Address -->
-    <label for="city">City</label>
-    <input type="text" name="city" id="city" required>
+      <label for="alt_phone">Alternate Phone</label>
+      <input type="tel" name="alt_phone" id="alt_phone">
 
-    <label for="state">State/Province</label>
-    <input type="text" name="state" id="state">
+      <!-- Address -->
+      <label for="city">City</label>
+      <input type="text" name="city" id="city" required>
 
-    <label for="postal_code">Postal Code</label>
-    <input type="text" name="postal_code" id="postal_code">
+      <label for="state">State/Province</label>
+      <input type="text" name="state" id="state">
 
-    <label for="country">Country</label>
-    <input type="text" name="country" id="country" required>
+      <label for="postal_code">Postal Code</label>
+      <input type="text" name="postal_code" id="postal_code">
 
-    <button type="submit">Submit</button>
-  </form>
+      <label for="country">Country</label>
+      <input type="text" name="country" id="country" required>
 
-  <!-- Error message + success modal -->
-  <p class="error" id="errorMsg"></p>
-  <div id="successModal" style="display:none;">
-    <p>Member submitted successfully!</p>
-    <button onclick="closeModal()">Close</button>
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- Error message + success modal -->
+    <p class="error" id="errorMsg"></p>
+    <div id="successModal">
+      <div class="modal-content">
+        <p>Member submitted successfully!</p>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<footer>
-  <p>© 2026 Rotaract International</p>
-  <p>In partnership with Rotary International</p>
-  <p>Contact: info@rotaract.org | +1 (312) 555-1234</p>
-  <p>Created by Rotaract Developer Francis Mukuna <br> Contact: mukunafrancis101@gmail.com | +254 116275256</p>
-</footer>
+  <footer>
+    <p>© 2026 Rotaract International</p>
+    <p>In partnership with Rotary International</p>
+    <p>Contact: info@rotaract.org | +1 (312) 555-1234</p>
+    <p>Created by Rotaract Developer Francis Mukuna <br> Contact: mukunafrancis101@gmail.com | +254 116275256</p>
+  </footer>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
-
