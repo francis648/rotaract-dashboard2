@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const { Parser } = require("json2csv");
 const ExcelJS = require("exceljs");
 const cors = require("cors");
-require("dotenv").config(); // load environment variables
+require("dotenv").config();
 
 const app = express();
 
@@ -17,29 +17,32 @@ app.use(express.static("public"));
 
 // ✅ CORS setup for Vercel frontend
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "https://rotaract-dashboard2.vercel.app",
+  origin: "https://rotaract-dashboard2.vercel.app", // frontend domain
   methods: ["GET", "POST", "DELETE"],
   credentials: true
 }));
 
-// Session setup
+// ✅ Session setup with cross-domain cookie support
 app.use(session({
   secret: process.env.SESSION_SECRET || "supersecretkey",
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // set true if using HTTPS
+  cookie: {
+    secure: true,       // cookies only over HTTPS
+    sameSite: "none",   // allow cross-site cookies
+    httpOnly: true
+  }
 }));
 
-// Database connection using Railway credentials via environment variables
+// Database connection using Railway credentials
 const db = mysql.createConnection({
-  host: process.env.DB_HOST,       // hopper.proxy.rlwy.net
-  port: process.env.DB_PORT || 40789, // Railway port
-  user: process.env.DB_USER,       // root
-  password: process.env.DB_PASS,   // Railway password
-  database: process.env.DB_NAME    // railway
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 40789,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME
 });
 
-// Ensure connection works
 db.connect(err => {
   if (err) {
     console.error("Database connection failed:", err.stack);
