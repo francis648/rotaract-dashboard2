@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-        credentials: "include"   // ✅ ensure cookies persist
+        credentials: "include"   // ✅ ensures cookies persist
       });
 
       if (!response.ok) {
