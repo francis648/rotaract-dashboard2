@@ -36,8 +36,8 @@
       <option value="Prefer not to say">Prefer not to say</option>
     </select>
     <button onclick="loadMembers()">Refresh</button>
-    <button onclick="window.location.href='/export/csv'">Download CSV</button>
-    <button onclick="window.location.href='/export/excel'">Download Excel</button>
+    <button onclick="window.location.href='https://rotaract-dashboard2.onrender.com/export/csv'">Download CSV</button>
+    <button onclick="window.location.href='https://rotaract-dashboard2.onrender.com/export/excel'">Download Excel</button>
     <!-- Register Admin button (hidden unless superadmin) -->
     <button id="registerAdminBtn" class="superadmin-only" style="display:none;" onclick="window.location.href='register.html'">
       Register Admin
@@ -72,6 +72,10 @@
   </div>
 
   <script>
+    const API_BASE = window.location.hostname.includes("localhost")
+      ? "http://localhost:3000"
+      : "https://rotaract-dashboard2.onrender.com";
+
     let allMembers = [];
     let currentPage = 1;
     const rowsPerPage = 20;
@@ -79,7 +83,7 @@
 
     async function loadMembers() {
       try {
-        const response = await fetch("/members");
+        const response = await fetch(`${API_BASE}/members`, { credentials: "include" });
         if (response.status === 401) {
           alert("Unauthorized. Please log in.");
           window.location.href = "login.html";
@@ -166,7 +170,7 @@
     // Logout
     async function logout() {
       try {
-        await fetch("/logout", { method: "POST" });
+        await fetch(`${API_BASE}/logout`, { method: "POST", credentials: "include" });
         alert("Logged out successfully.");
         window.location.href = "login.html";
       } catch (error) {
@@ -178,7 +182,7 @@
     async function deleteMember(id) {
       if (!confirm("Are you sure you want to delete this member?")) return;
       try {
-        const response = await fetch(`/members/${id}`, { method: "DELETE" });
+        const response = await fetch(`${API_BASE}/members/${id}`, { method: "DELETE", credentials: "include" });
         const result = await response.json();
         alert(result.message);
         loadMembers(); // refresh table
