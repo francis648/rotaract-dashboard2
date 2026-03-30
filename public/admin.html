@@ -25,186 +25,108 @@
     /* ✅ Responsive table for mobile */
     @media (max-width: 768px) {
       table, thead, tbody, th, td, tr { display: block; }
-      thead tr { display: none; }
-      tr { margin-bottom: 15px; border: 1px solid #ccc; padding: 10px; background: #fff; }
-      td { border: none; padding: 5px; }
-      td::before { font-weight: bold; display: block; }
+      th { position: absolute; top: -9999px; left: -9999px; }
+      tr { margin-bottom: 10px; }
+      td { border: none; position: relative; padding-left: 50%; }
+      td:before { 
+        position: absolute; 
+        left: 10px; 
+        width: 45%; 
+        white-space: nowrap; 
+        font-weight: bold; 
+        color: #003566;
+      }
     }
   </style>
 </head>
 <body>
-  <h2>Charter Members Dashboard</h2>
+  <h2>Rotaract Admin Dashboard</h2>
   <button class="logout" onclick="logout()">Logout</button>
 
-  <!-- Controls -->
   <div class="controls">
-    <input type="text" id="searchInput" placeholder="Search by name or city">
-    <select id="genderFilter">
-      <option value="">All Genders</option>
-      <option value="Male">Male</option>
-      <option value="Female">Female</option>
-      <option value="Prefer not to say">Prefer not to say</option>
-    </select>
-    <button onclick="loadMembers()">Refresh</button>
-    <button onclick="window.location.href='https://rotaract-dashboard2.onrender.com/export/csv'">Download CSV</button>
-    <button onclick="window.location.href='https://rotaract-dashboard2.onrender.com/export/excel'">Download Excel</button>
-    <button id="registerAdminBtn" class="superadmin-only" style="display:none;" onclick="window.location.href='register.html'">
-      Register Admin
-    </button>
+    <button onclick="exportCSV()">Export CSV</button>
+    <button onclick="exportExcel()">Export Excel</button>
+    <button class="superadmin-only" onclick="showRegisterForm()">Register Admin</button>
   </div>
 
-  <!-- Members Table -->
   <table id="membersTable">
     <thead>
       <tr>
         <th>ID</th>
-        <th>Title</th>
         <th>First Name</th>
         <th>Last Name</th>
-        <th>Gender</th>
-        <th>DOB</th>
         <th>Email</th>
         <th>Phone</th>
-        <th>City</th>
-        <th>Country</th>
+        <th>Club</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <!-- Pagination -->
-  <div class="pagination">
-    <button onclick="prevPage()">Prev</button>
-    <span id="pageInfo"></span>
-    <button onclick="nextPage()">Next</button>
-  </div>
+  <div class="pagination" id="pagination"></div>
 
   <script>
-    const API_BASE = window.location.hostname.includes("localhost")
-      ? "http://localhost:3000"
-      : "https://rotaract-dashboard2.onrender.com";
+    const backendUrl = "https://rotaract-dashboard2.onrender.com";
 
-    let allMembers = [];
-    let currentPage = 1;
-    const rowsPerPage = 20;
-    let userRole = localStorage.getItem("userRole");
-
-    async function loadMembers() {
+    async function fetchMembers(page = 1) {
       try {
-        const response = await fetch(`${API_BASE}/members`, { credentials: "include" });
-        if (response.status === 401) {
-          alert("Unauthorized. Please log in.");
-          window.location.href = "login.html";
-          return;
-        }
-        allMembers = await response.json();
-        applyFilters();
-      } catch (error) {
-        alert("Error loading members. Please check your connection.");
-      }
-    }
-
-    function renderTable(members) {
-      const tbody = document.querySelector("#membersTable tbody");
-      tbody.innerHTML = "";
-
-      const start = (currentPage - 1) * rowsPerPage;
-      const end = start + rowsPerPage;
-      const paginatedMembers = members.slice(start, end);
-
-      paginatedMembers.forEach(member => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${member.id}</td>
-          <td>${member.title || ""}</td>
-          <td>${member.first_name}</td>
-          <td>${member.last_name}</td>
-          <td>${member.gender}</td>
-          <td>${member.dob}</td>
-          <td>${member.email}</td>
-          <td>${member.phone}</td>
-          <td>${member.city}</td>
-          <td>${member.country}</td>
-          <td>
-            ${userRole === "admin" || userRole === "superadmin" 
-              ? `<button class="delete-btn" onclick="deleteMember(${member.id})">Delete</button>` 
-              : ""}
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-
-      document.getElementById("pageInfo").textContent =
-        `Page ${currentPage} of ${Math.ceil(members.length / rowsPerPage)}`;
-    }
-
-    document.getElementById("searchInput").addEventListener("input", applyFilters);
-    document.getElementById("genderFilter").addEventListener("change", applyFilters);
-
-    function applyFilters() {
-      const searchValue = document.getElementById("searchInput").value.toLowerCase();
-      const genderValue = document.getElementById("genderFilter").value;
-
-      const filtered = allMembers.filter(member => {
-        const matchesSearch =
-          member.first_name.toLowerCase().includes(searchValue) ||
-          member.last_name.toLowerCase().includes(searchValue) ||
-          member.city.toLowerCase().includes(searchValue);
-
-        const matchesGender = genderValue ? member.gender === genderValue : true;
-
-        return matchesSearch && matchesGender;
-      });
-
-      renderTable(filtered);
-    }
-
-    function nextPage() {
-      if (currentPage < Math.ceil(allMembers.length / rowsPerPage)) {
-        currentPage++;
-        applyFilters();
-      }
-    }
-
-    function prevPage() {
-      if (currentPage > 1) {
-        currentPage--;
-        applyFilters();
-      }
-    }
-
-    async function logout() {
-      try {
-        await fetch(`${API_BASE}/logout`, { method: "POST", credentials: "include" });
-        alert("Logged out successfully.");
-        localStorage.removeItem("userRole");
-        window.location.href = "login.html";
-      } catch {
-        alert("Error logging out.");
+        const res = await fetch(`${backendUrl}/members?page=${page}`, {
+          credentials: "include"
+        });
+        const members = await res.json();
+        const tbody = document.querySelector("#membersTable tbody");
+        tbody.innerHTML = "";
+        members.forEach(m => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${m.id}</td>
+            <td>${m.first_name}</td>
+            <td>${m.last_name}</td>
+            <td>${m.email}</td>
+            <td>${m.phone}</td>
+            <td>${m.club_name}</td>
+            <td><button class="delete-btn" onclick="deleteMember(${m.id})">Delete</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Error fetching members:", err);
       }
     }
 
     async function deleteMember(id) {
       if (!confirm("Are you sure you want to delete this member?")) return;
       try {
-        const response = await fetch(`${API_BASE}/members/${id}`, { method: "DELETE", credentials: "include" });
-        const result = await response.json();
-        alert(result.message);
-        loadMembers();
-      } catch {
-        alert("Failed to delete member.");
+        await fetch(`${backendUrl}/members/${id}`, {
+          method: "DELETE",
+          credentials: "include"
+        });
+        fetchMembers();
+      } catch (err) {
+        console.error("Error deleting member:", err);
       }
     }
 
-    function checkRole() {
-      if (userRole === "superadmin") {
-        document.getElementById("registerAdminBtn").style.display = "inline-block";
-      }
+    function exportCSV() {
+      window.location.href = `${backendUrl}/export/csv`;
     }
 
-    checkRole();
-    loadMembers();
+    function exportExcel() {
+      window.location.href = `${backendUrl}/export/excel`;
+    }
+
+    async function logout() {
+      await fetch(`${backendUrl}/logout`, { method: "POST", credentials: "include" });
+      window.location.href = "/login.html";
+    }
+
+    function showRegisterForm() {
+      alert("Superadmin registration form goes here.");
+    }
+
+    // Load members on page load
+    fetchMembers();
   </script>
 </body>
 </html>
